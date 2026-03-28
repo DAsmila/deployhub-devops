@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DeployHub — DevOps Control Center</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root {
+      --bg: #060608;
+      --surface: #0f0f14;
+      --card: #16161e;
+      --card2: #1c1c26;
+      --border: #23232f;
+      --border2: #2e2e3e;
+      --accent: #6366f1;
+      --accent-glow: rgba(99,102,241,0.2);
+      --cyan: #22d3ee;
+      --green: #22c55e;
+      --red: #f43f5e;
+      --amber: #f59e0b;
+      --purple: #a855f7;
+      --pink: #ec4899;
+      --text: #e8e8f0;
+      --text2: #9898b0;
+      --text3: #5a5a70;
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'Inter', sans-serif;
+      --sidebar: 240px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden;}
+
+    /* ─── GRID BG ─── */
+    body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+      background-image:linear-gradient(rgba(99,102,241,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(99,102,241,0.02) 1px,transparent 1px);
+      background-size:32px 32px;}
+
+    /* ─── LOGIN ─── */
+    #login-page{position:relative;z-index:10;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+    .login-split{display:flex;width:100%;max-width:900px;border-radius:24px;overflow:hidden;border:1px solid var(--border2);box-shadow:0 40px 80px rgba(0,0,0,0.6);}
+    .login-left{flex:1;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);padding:48px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;}
+    .login-left::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:rgba(99,102,241,0.15);}
+    .login-left::after{content:'';position:absolute;bottom:-40px;left:-40px;width:150px;height:150px;border-radius:50%;background:rgba(34,211,238,0.1);}
+    .brand{display:flex;align-items:center;gap:12px;margin-bottom:48px;}
+    .brand-icon{width:44px;height:44px;background:linear-gradient(135deg,var(--accent),var(--cyan));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;}
+    .brand-name{font-family:var(--mono);font-size:20px;font-weight:700;color:#fff;}
+    .brand-name span{color:var(--cyan);}
+    .login-tagline{position:relative;z-index:1;}
+    .login-tagline h1{font-size:32px;font-weight:600;color:#fff;line-height:1.3;margin-bottom:12px;}
+    .login-tagline p{color:rgba(255,255,255,0.5);font-size:14px;line-height:1.7;}
+    .login-features{display:flex;flex-direction:column;gap:14px;position:relative;z-index:1;}
+    .login-feat{display:flex;align-items:center;gap:10px;color:rgba(255,255,255,0.7);font-size:13px;}
+    .login-feat i{width:28px;height:28px;background:rgba(255,255,255,0.08);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--cyan);}
+    .login-right{width:380px;background:var(--surface);padding:48px 40px;display:flex;flex-direction:column;justify-content:center;}
+    .login-right h2{font-size:22px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:10px;}
+    .login-right p{color:var(--text2);font-size:13px;margin-bottom:32px;}
+    .field{margin-bottom:18px;}
+    .field label{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px;}
+    .field-wrap{position:relative;}
+    .field-wrap i.fi{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px;pointer-events:none;}
+    .field input{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:12px 16px 12px 40px;color:var(--text);font-family:var(--sans);font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s;}
+    .field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(99,102,241,0.15);}
+    .field input::placeholder{color:var(--text3);}
+    .login-err{display:flex;align-items:center;gap:7px;color:var(--red);font-family:var(--mono);font-size:11px;margin-bottom:14px;min-height:16px;}
+    .btn-login{width:100%;background:linear-gradient(135deg,var(--accent),#4f46e5);border:none;border-radius:10px;padding:13px;color:#fff;font-family:var(--mono);font-size:13px;font-weight:700;cursor:pointer;transition:opacity .2s,transform .1s;display:flex;align-items:center;justify-content:center;gap:9px;letter-spacing:.5px;}
+    .btn-login:hover{opacity:.9;}
+    .btn-login:active{transform:scale(.98);}
+    .login-note{margin-top:20px;text-align:center;font-size:12px;color:var(--text3);display:flex;align-items:center;justify-content:center;gap:6px;}
+
+    /* ─── MAIN LAYOUT ─── */
+    #app-page{display:none;position:relative;z-index:1;min-height:100vh;}
+    .layout{display:flex;min-height:100vh;}
+
+    /* ─── SIDEBAR ─── */
+    .sidebar{width:var(--sidebar);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;transition:transform .3s;}
+    .sidebar-brand{display:flex;align-items:center;gap:10px;padding:24px 20px 20px;border-bottom:1px solid var(--border);}
+    .sidebar-brand-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--cyan));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;}
+    .sidebar-brand-name{font-family:var(--mono);font-size:15px;font-weight:700;}
+    .sidebar-brand-name span{color:var(--cyan);}
+    .sidebar-nav{flex:1;padding:16px 12px;overflow-y:auto;}
+    .nav-section{margin-bottom:24px;}
+    .nav-section-label{font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;padding:0 8px;margin-bottom:8px;}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;transition:background .15s,color .15s;color:var(--text2);font-size:13px;font-weight:500;margin-bottom:2px;position:relative;}
+    .nav-item:hover{background:var(--card);color:var(--text);}
+    .nav-item.active{background:rgba(99,102,241,0.15);color:var(--accent);}
+    .nav-item.active::before{content:'';position:absolute;left:0;top:20%;bottom:20%;width:3px;background:var(--accent);border-radius:0 3px 3px 0;}
+    .nav-item i{width:18px;text-align:center;font-size:13px;}
+    .nav-badge{margin-left:auto;background:var(--accent);color:#fff;font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:999px;}
+    .nav-badge.green{background:var(--green);}
+    .nav-badge.amber{background:var(--amber);color:#000;}
+    .sidebar-footer{padding:16px 12px;border-top:1px solid var(--border);}
+    .user-info{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;transition:background .15s;}
+    .user-info:hover{background:var(--card);}
+    .user-avatar{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:700;color:#fff;flex-shrink:0;}
+    .user-meta{flex:1;min-width:0;}
+    .user-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .user-role{font-size:11px;color:var(--text2);}
+    .btn-signout{background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:4px;transition:color .15s;}
+    .btn-signout:hover{color:var(--red);}
+
+    /* ─── MAIN CONTENT ─── */
+    .main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;min-height:100vh;}
+    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+    .topbar-left{display:flex;align-items:center;gap:16px;}
+    .page-title{font-size:15px;font-weight:600;}
+    .breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);}
+    .breadcrumb i{font-size:10px;}
+    .topbar-right{display:flex;align-items:center;gap:10px;}
+    .topbar-btn{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:6px 14px;color:var(--text2);font-size:12px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px;font-family:var(--mono);}
+    .topbar-btn:hover{border-color:var(--accent);color:var(--text);}
+    .health-pill{display:flex;align-items:center;gap:6px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.25);border-radius:999px;padding:5px 12px;font-family:var(--mono);font-size:11px;color:var(--green);}
+    .health-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);}
+    .health-pill.offline{background:rgba(244,63,94,0.1);border-color:rgba(244,63,94,0.25);color:var(--red);}
+    .health-pill.offline .health-dot{background:var(--red);box-shadow:0 0 6px var(--red);}
+    .content{padding:28px;flex:1;}
+    .page{display:none;}
+    .page.active{display:block;}
+
+    /* ─── CARDS ─── */
+    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;}
+    .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+    .card-title{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;}
+    .card-title i{color:var(--accent);}
+
+    /* ─── DASHBOARD PAGE ─── */
+    .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+    .kpi{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;position:relative;overflow:hidden;transition:border-color .2s,transform .2s;}
+    .kpi:hover{border-color:var(--border2);transform:translateY(-2px);}
+    .kpi-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
+    .kpi-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;}
+    .kpi-icon.indigo{background:rgba(99,102,241,0.15);color:var(--accent);}
+    .kpi-icon.cyan{background:rgba(34,211,238,0.12);color:var(--cyan);}
+    .kpi-icon.green{background:rgba(34,197,94,0.12);color:var(--green);}
+    .kpi-icon.amber{background:rgba(245,158,11,0.12);color:var(--amber);}
+    .kpi-icon.purple{background:rgba(168,85,247,0.12);color:var(--purple);}
+    .kpi-icon.pink{background:rgba(236,72,153,0.12);color:var(--pink);}
+    .kpi-icon.red{background:rgba(244,63,94,0.12);color:var(--red);}
+    .kpi-trend{font-family:var(--mono);font-size:10px;display:flex;align-items:center;gap:4px;}
+    .kpi-trend.up{color:var(--green);}
+    .kpi-trend.down{color:var(--red);}
+    .kpi-val{font-family:var(--mono);font-size:28px;font-weight:700;margin-bottom:4px;}
+    .kpi-label{font-size:12px;color:var(--text2);}
+    .kpi-bar{position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0 0 14px 14px;}
+    .kpi-bar.indigo{background:linear-gradient(90deg,var(--accent),var(--purple));}
+    .kpi-bar.cyan{background:linear-gradient(90deg,var(--cyan),var(--accent));}
+    .kpi-bar.green{background:linear-gradient(90deg,var(--green),var(--cyan));}
+    .kpi-bar.amber{background:linear-gradient(90deg,var(--amber),var(--pink));}
+
+    .dash-grid{display:grid;grid-template-columns:1fr 320px;gap:16px;margin-bottom:24px;}
+    .activity-list{display:flex;flex-direction:column;gap:10px;}
+    .activity-item{display:flex;align-items:flex-start;gap:12px;padding:12px;border-radius:10px;background:var(--card2);border:1px solid var(--border);}
+    .activity-dot{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+    .activity-content{flex:1;}
+    .activity-title{font-size:13px;font-weight:500;margin-bottom:3px;}
+    .activity-time{font-family:var(--mono);font-size:10px;color:var(--text3);display:flex;align-items:center;gap:5px;}
+
+    .pipeline-list{display:flex;flex-direction:column;gap:8px;}
+    .pipeline-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card2);border-radius:8px;border:1px solid var(--border);}
+    .pipeline-name{flex:1;font-size:12px;font-weight:500;}
+    .pipeline-status{font-family:var(--mono);font-size:10px;padding:3px 9px;border-radius:999px;display:flex;align-items:center;gap:5px;}
+    .pipeline-status.success{background:rgba(34,197,94,0.12);color:var(--green);border:1px solid rgba(34,197,94,0.25);}
+    .pipeline-status.running{background:rgba(34,211,238,0.12);color:var(--cyan);border:1px solid rgba(34,211,238,0.25);}
+    .pipeline-status.failed{background:rgba(244,63,94,0.12);color:var(--red);border:1px solid rgba(244,63,94,0.25);}
+    .pipeline-time{font-family:var(--mono);font-size:10px;color:var(--text3);}
+
+    /* ─── TASKS PAGE ─── */
+    .tasks-toolbar{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;}
+    .search-wrap{flex:1;min-width:200px;position:relative;}
+    .search-wrap i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px;}
+    .search-wrap input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:9px;padding:9px 16px 9px 36px;color:var(--text);font-size:13px;outline:none;transition:border-color .2s;}
+    .search-wrap input:focus{border-color:var(--accent);}
+    .search-wrap input::placeholder{color:var(--text3);}
+    .filter-select{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:9px 14px;color:var(--text);font-family:var(--mono);font-size:11px;outline:none;cursor:pointer;}
+    .btn-primary{background:linear-gradient(135deg,var(--accent),#4f46e5);border:none;border-radius:9px;padding:9px 18px;color:#fff;font-family:var(--mono);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;transition:opacity .2s,transform .1s;white-space:nowrap;}
+    .btn-primary:hover{opacity:.9;}
+    .btn-primary:active{transform:scale(.97);}
+    .btn-secondary{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:9px 14px;color:var(--text2);font-family:var(--mono);font-size:11px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s;}
+    .btn-secondary:hover{border-color:var(--accent);color:var(--text);}
+
+    /* Add task form */
+    .add-task-panel{background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:20px;margin-bottom:20px;display:none;}
+    .add-task-panel.open{display:block;animation:slideIn .2s ease;}
+    .add-task-grid{display:grid;grid-template-columns:1fr auto auto auto;gap:10px;align-items:end;}
+    .input-group{display:flex;flex-direction:column;gap:6px;}
+    .input-group label{font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;}
+    .inp{background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:9px 14px;color:var(--text);font-size:13px;outline:none;width:100%;transition:border-color .2s;}
+    .inp:focus{border-color:var(--accent);}
+    .inp::placeholder{color:var(--text3);}
+    .sel{background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:9px 14px;color:var(--text);font-family:var(--mono);font-size:11px;outline:none;cursor:pointer;}
+
+    .task-table{width:100%;border-collapse:collapse;}
+    .task-table th{text-align:left;padding:10px 14px;font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);}
+    .task-table td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle;}
+    .task-table tr:last-child td{border-bottom:none;}
+    .task-table tr:hover td{background:var(--card2);}
+    .task-row{animation:slideIn .2s ease;}
+    @keyframes slideIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+    .priority-dot{display:inline-flex;align-items:center;gap:6px;font-size:12px;}
+    .priority-dot::before{content:'';width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+    .priority-dot.high::before{background:var(--red);}
+    .priority-dot.medium::before{background:var(--amber);}
+    .priority-dot.low::before{background:var(--green);}
+    .badge{font-family:var(--mono);font-size:10px;text-transform:uppercase;padding:3px 9px;border-radius:999px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
+    .badge.pending{background:rgba(245,158,11,0.12);color:var(--amber);border:1px solid rgba(245,158,11,0.25);}
+    .badge.in-progress{background:rgba(34,211,238,0.12);color:var(--cyan);border:1px solid rgba(34,211,238,0.25);}
+    .badge.done{background:rgba(34,197,94,0.12);color:var(--green);border:1px solid rgba(34,197,94,0.25);}
+    .badge.review{background:rgba(168,85,247,0.12);color:var(--purple);border:1px solid rgba(168,85,247,0.25);}
+    .badge.blocked{background:rgba(244,63,94,0.12);color:var(--red);border:1px solid rgba(244,63,94,0.25);}
+    .task-assignee{display:flex;align-items:center;gap:7px;}
+    .avatar-xs{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:700;color:#fff;flex-shrink:0;}
+    .btn-icon{background:transparent;border:1px solid transparent;border-radius:6px;padding:5px 8px;color:var(--text3);cursor:pointer;transition:all .15s;font-size:12px;}
+    .btn-icon:hover{border-color:var(--border2);color:var(--text);}
+    .btn-icon.danger:hover{border-color:var(--red);color:var(--red);background:rgba(244,63,94,0.08);}
+
+    /* ─── PIPELINE PAGE ─── */
+    .pipeline-stages{display:flex;gap:0;margin-bottom:24px;overflow-x:auto;padding-bottom:4px;}
+    .stage{flex:1;min-width:120px;background:var(--card);border:1px solid var(--border);padding:16px;position:relative;}
+    .stage:first-child{border-radius:12px 0 0 12px;}
+    .stage:last-child{border-radius:0 12px 12px 0;}
+    .stage+.stage{border-left:none;}
+    .stage-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;margin-bottom:10px;}
+    .stage-name{font-family:var(--mono);font-size:11px;font-weight:600;margin-bottom:4px;}
+    .stage-desc{font-size:11px;color:var(--text2);}
+    .stage-status{position:absolute;top:12px;right:12px;}
+    .stage.success{border-top:3px solid var(--green);}
+    .stage.running{border-top:3px solid var(--cyan);}
+    .stage.pending-s{border-top:3px solid var(--border2);}
+    .stage.failed{border-top:3px solid var(--red);}
+
+    .build-list{display:flex;flex-direction:column;gap:10px;}
+    .build-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:16px;transition:border-color .2s;}
+    .build-item:hover{border-color:var(--border2);}
+    .build-num{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text2);min-width:48px;}
+    .build-info{flex:1;}
+    .build-title{font-size:13px;font-weight:500;margin-bottom:4px;}
+    .build-meta{display:flex;align-items:center;gap:14px;font-family:var(--mono);font-size:10px;color:var(--text3);}
+    .build-meta span{display:flex;align-items:center;gap:5px;}
+    .build-duration{font-family:var(--mono);font-size:12px;color:var(--text2);}
+
+    /* ─── TEAM PAGE ─── */
+    .team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;}
+    .team-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;text-align:center;transition:border-color .2s,transform .2s;}
+    .team-card:hover{border-color:var(--accent);transform:translateY(-2px);}
+    .team-avatar{width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:22px;font-weight:700;color:#fff;margin:0 auto 14px;}
+    .team-name{font-size:14px;font-weight:600;margin-bottom:4px;}
+    .team-role{font-size:12px;color:var(--text2);margin-bottom:14px;}
+    .team-tags{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;}
+    .tag{font-family:var(--mono);font-size:9px;padding:3px 8px;border-radius:5px;background:var(--card2);color:var(--text2);border:1px solid var(--border);}
+    .team-stats{display:flex;justify-content:space-around;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);}
+    .team-stat{text-align:center;}
+    .team-stat-val{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--accent);}
+    .team-stat-label{font-size:10px;color:var(--text3);margin-top:2px;}
+
+    /* ─── LOGS PAGE ─── */
+    .log-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+    .log-terminal{background:#050507;border:1px solid var(--border);border-radius:12px;padding:20px;font-family:var(--mono);font-size:12px;line-height:1.8;max-height:480px;overflow-y:auto;}
+    .log-terminal::-webkit-scrollbar{width:6px;}
+    .log-terminal::-webkit-scrollbar-track{background:transparent;}
+    .log-terminal::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+    .log-line{display:flex;gap:12px;padding:2px 0;}
+    .log-time{color:var(--text3);flex-shrink:0;}
+    .log-level{min-width:52px;flex-shrink:0;}
+    .log-level.INFO{color:var(--cyan);}
+    .log-level.WARN{color:var(--amber);}
+    .log-level.ERROR{color:var(--red);}
+    .log-level.SUCCESS{color:var(--green);}
+    .log-level.DEBUG{color:var(--text3);}
+    .log-msg{color:var(--text);}
+    .log-msg.error{color:var(--red);}
+    .log-msg.success{color:var(--green);}
+
+    /* ─── INFRA PAGE ─── */
+    .infra-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
+    .infra-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;transition:border-color .2s;}
+    .infra-card:hover{border-color:var(--border2);}
+    .infra-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+    .infra-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;}
+    .infra-name{font-size:14px;font-weight:600;}
+    .infra-type{font-size:11px;color:var(--text2);}
+    .infra-metrics{display:flex;flex-direction:column;gap:10px;}
+    .metric-row{display:flex;flex-direction:column;gap:5px;}
+    .metric-label{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);}
+    .metric-label span:last-child{font-family:var(--mono);color:var(--text);}
+    .metric-bar{height:5px;background:var(--card2);border-radius:3px;overflow:hidden;}
+    .metric-fill{height:100%;border-radius:3px;transition:width .5s ease;}
+    .metric-fill.green{background:var(--green);}
+    .metric-fill.amber{background:var(--amber);}
+    .metric-fill.red{background:var(--red);}
+    .metric-fill.cyan{background:var(--cyan);}
+    .infra-status{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
+    .status-pill{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;padding:3px 10px;border-radius:999px;}
+    .status-pill.running{background:rgba(34,197,94,0.1);color:var(--green);border:1px solid rgba(34,197,94,0.2);}
+    .status-pill.stopped{background:rgba(244,63,94,0.1);color:var(--red);border:1px solid rgba(244,63,94,0.2);}
+    .status-pill.pending{background:rgba(245,158,11,0.1);color:var(--amber);border:1px solid rgba(245,158,11,0.2);}
+    .status-dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+
+    /* ─── TOAST ─── */
+    .toast{position:fixed;bottom:28px;right:28px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 18px;font-family:var(--mono);font-size:12px;transform:translateY(70px);opacity:0;transition:all .3s ease;z-index:9999;display:flex;align-items:center;gap:9px;max-width:320px;}
+    .toast.show{transform:translateY(0);opacity:1;}
+    .toast.success{border-color:rgba(34,197,94,.4);color:var(--green);}
+    .toast.error{border-color:rgba(244,63,94,.4);color:var(--red);}
+    .toast.info{border-color:rgba(99,102,241,.4);color:var(--accent);}
+
+    /* ─── SECTION HEADER ─── */
+    .section-header{margin-bottom:22px;}
+    .section-header h2{font-size:18px;font-weight:600;margin-bottom:4px;}
+    .section-header p{font-size:13px;color:var(--text2);}
+
+    /* ─── EMPTY STATE ─── */
+    .empty{text-align:center;padding:60px 0;color:var(--text3);}
+    .empty i{font-size:40px;margin-bottom:14px;display:block;}
+    .empty p{font-family:var(--mono);font-size:12px;}
+
+    @media(max-width:768px){
+      .sidebar{transform:translateX(-100%);}
+      .main{margin-left:0;}
+      .kpi-grid{grid-template-columns:1fr 1fr;}
+      .dash-grid{grid-template-columns:1fr;}
+      .login-split{flex-direction:column;}
+      .login-left{display:none;}
+      .login-right{width:100%;}
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════ LOGIN ══════════════ -->
+<div id="login-page">
+  <div class="login-split">
+    <div class="login-left">
+      <div>
+        <div class="brand">
+          <div class="brand-icon"><i class="fa-solid fa-rocket"></i></div>
+          <div class="brand-name">Deploy<span>Hub</span></div>
+        </div>
+        <div class="login-tagline">
+          <h1>Your DevOps<br/>Control Center</h1>
+          <p>Manage pipelines, deployments, infrastructure and team — all from one place.</p>
+        </div>
+      </div>
+      <div class="login-features">
+        <div class="login-feat"><i><i class="fa-solid fa-code-branch"></i></i> Git workflow & branch management</div>
+        <div class="login-feat"><i><i class="fa-solid fa-gears"></i></i> Automated CI/CD pipelines</div>
+        <div class="login-feat"><i><i class="fa-brands fa-docker"></i></i> Docker container orchestration</div>
+        <div class="login-feat"><i><i class="fa-solid fa-server"></i></i> Infrastructure as Code (Terraform)</div>
+        <div class="login-feat"><i><i class="fa-solid fa-shield-halved"></i></i> Secure team access control</div>
+      </div>
+    </div>
+    <div class="login-right">
+      <h2><i class="fa-solid fa-lock" style="color:var(--accent);font-size:18px;"></i> Sign In</h2>
+      <p>Enter your credentials to access the dashboard</p>
+      <div class="field">
+        <label><i class="fa-solid fa-user"></i> Username</label>
+        <div class="field-wrap">
+          <i class="fi fa-solid fa-user"></i>
+          <input type="text" id="login-user" placeholder="e.g. admin, devuser, john"/>
+        </div>
+      </div>
+      <div class="field">
+        <label><i class="fa-solid fa-key"></i> Password</label>
+        <div class="field-wrap">
+          <i class="fi fa-solid fa-lock"></i>
+          <input type="password" id="login-pass" placeholder="Enter your password"/>
+        </div>
+      </div>
+      <div class="login-err" id="login-err"></div>
+      <button class="btn-login" onclick="doLogin()">
+        <i class="fa-solid fa-right-to-bracket"></i> SIGN IN
+      </button>
+      <div class="login-note">
+        <i class="fa-solid fa-circle-info"></i>
+        Use <span>admin</span> / <span>admin123</span> or create your own
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ APP ══════════════ -->
+<div id="app-page">
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-brand-icon"><i class="fa-solid fa-rocket"></i></div>
+        <div class="sidebar-brand-name">Deploy<span>Hub</span></div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-label">Overview</div>
+          <div class="nav-item active" onclick="goPage('dashboard',this)">
+            <i class="fa-solid fa-gauge-high"></i> Dashboard
+          </div>
+          <div class="nav-item" onclick="goPage('pipeline',this)">
+            <i class="fa-solid fa-code-branch"></i> CI/CD Pipeline
+            <span class="nav-badge green">Live</span>
+          </div>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-label">Management</div>
+          <div class="nav-item" onclick="goPage('tasks',this)">
+            <i class="fa-solid fa-list-check"></i> Task Board
+            <span class="nav-badge" id="task-nav-count">0</span>
+          </div>
+          <div class="nav-item" onclick="goPage('infra',this)">
+            <i class="fa-solid fa-server"></i> Infrastructure
+          </div>
+          <div class="nav-item" onclick="goPage('team',this)">
+            <i class="fa-solid fa-users"></i> Team
+          </div>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-label">Monitoring</div>
+          <div class="nav-item" onclick="goPage('logs',this)">
+            <i class="fa-solid fa-terminal"></i> Logs
+            <span class="nav-badge amber">New</span>
+          </div>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar" id="sidebar-avatar">A</div>
+          <div class="user-meta">
+            <div class="user-name" id="sidebar-uname">admin</div>
+            <div class="user-role">DevOps Engineer</div>
+          </div>
+          <button class="btn-signout" onclick="doLogout()" title="Sign out"><i class="fa-solid fa-right-from-bracket"></i></button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <!-- TOPBAR -->
+      <div class="topbar">
+        <div class="topbar-left">
+          <div class="breadcrumb" id="breadcrumb">
+            <i class="fa-solid fa-house"></i> Home <i class="fa-solid fa-chevron-right"></i> <span>Dashboard</span>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="health-pill" id="health-pill" onclick="checkHealth()">
+            <div class="health-dot"></div>
+            <span id="health-txt">Checking...</span>
+          </div>
+          <button class="topbar-btn" onclick="checkHealth()">
+            <i class="fa-solid fa-rotate"></i> Refresh
+          </button>
+        </div>
+      </div>
+
+      <div class="content">
+
+        <!-- ── DASHBOARD PAGE ── -->
+        <div class="page active" id="page-dashboard">
+          <div class="section-header">
+            <h2><i class="fa-solid fa-gauge-high" style="color:var(--accent)"></i> Dashboard</h2>
+            <p>Welcome back! Here's what's happening with your deployments.</p>
+          </div>
+          <div class="kpi-grid">
+            <div class="kpi">
+              <div class="kpi-top">
+                <div class="kpi-icon indigo"><i class="fa-solid fa-list-check"></i></div>
+                <div class="kpi-trend up"><i class="fa-solid fa-arrow-trend-up"></i> 12%</div>
+              </div>
+              <div class="kpi-val" id="kpi-tasks">0</div>
+              <div class="kpi-label">Total Tasks</div>
+              <div class="kpi-bar indigo"></div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-top">
+                <div class="kpi-icon green"><i class="fa-solid fa-circle-check"></i></div>
+                <div class="kpi-trend up"><i class="fa-solid fa-arrow-trend-up"></i> 8%</div>
+              </div>
+              <div class="kpi-val" id="kpi-done">0</div>
+              <div class="kpi-label">Completed</div>
+              <div class="kpi-bar green"></div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-top">
+                <div class="kpi-icon cyan"><i class="fa-brands fa-docker"></i></div>
+                <div class="kpi-trend up"><i class="fa-solid fa-arrow-trend-up"></i> 3</div>
+              </div>
+              <div class="kpi-val">5</div>
+              <div class="kpi-label">Containers Running</div>
+              <div class="kpi-bar cyan"></div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-top">
+                <div class="kpi-icon amber"><i class="fa-solid fa-rocket"></i></div>
+                <div class="kpi-trend up"><i class="fa-solid fa-arrow-trend-up"></i> 5%</div>
+              </div>
+              <div class="kpi-val">24</div>
+              <div class="kpi-label">Deployments</div>
+              <div class="kpi-bar amber"></div>
+            </div>
+          </div>
+          <div class="dash-grid">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> Recent Activity</div>
+              </div>
+              <div class="activity-list">
+                <div class="activity-item">
+                  <div class="activity-dot kpi-icon green"><i class="fa-solid fa-check"></i></div>
+                  <div class="activity-content">
+                    <div class="activity-title">Pipeline #24 deployed successfully</div>
+                    <div class="activity-time"><i class="fa-solid fa-clock"></i> 2 mins ago · main branch</div>
+                  </div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-dot kpi-icon cyan"><i class="fa-brands fa-docker"></i></div>
+                  <div class="activity-content">
+                    <div class="activity-title">3 containers scaled up on k8s cluster</div>
+                    <div class="activity-time"><i class="fa-solid fa-clock"></i> 15 mins ago · production</div>
+                  </div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-dot kpi-icon amber"><i class="fa-solid fa-code-branch"></i></div>
+                  <div class="activity-content">
+                    <div class="activity-title">feature/auth merged into main via PR #8</div>
+                    <div class="activity-time"><i class="fa-solid fa-clock"></i> 1 hr ago · GitHub</div>
+                  </div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-dot kpi-icon indigo"><i class="fa-solid fa-server"></i></div>
+                  <div class="activity-content">
+                    <div class="activity-title">Terraform applied — EC2 instance provisioned</div>
+                    <div class="activity-time"><i class="fa-solid fa-clock"></i> 3 hrs ago · AWS us-east-1</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title"><i class="fa-solid fa-gears"></i> Pipeline Status</div>
+              </div>
+              <div class="pipeline-list">
+                <div class="pipeline-item">
+                  <i class="fa-solid fa-code-branch" style="color:var(--text3)"></i>
+                  <div class="pipeline-name">Build & Test</div>
+                  <div class="pipeline-status success"><i class="fa-solid fa-check"></i> Passed</div>
+                  <div class="pipeline-time">1m 24s</div>
+                </div>
+                <div class="pipeline-item">
+                  <i class="fa-brands fa-docker" style="color:var(--text3)"></i>
+                  <div class="pipeline-name">Docker Build</div>
+                  <div class="pipeline-status success"><i class="fa-solid fa-check"></i> Passed</div>
+                  <div class="pipeline-time">2m 10s</div>
+                </div>
+                <div class="pipeline-item">
+                  <i class="fa-solid fa-upload" style="color:var(--text3)"></i>
+                  <div class="pipeline-name">Push to Hub</div>
+                  <div class="pipeline-status success"><i class="fa-solid fa-check"></i> Passed</div>
+                  <div class="pipeline-time">45s</div>
+                </div>
+                <div class="pipeline-item">
+                  <i class="fa-solid fa-rocket" style="color:var(--text3)"></i>
+                  <div class="pipeline-name">Deploy</div>
+                  <div class="pipeline-status running"><i class="fa-solid fa-spinner fa-spin"></i> Running</div>
+                  <div class="pipeline-time">—</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── TASKS PAGE ── -->
+        <div class="page" id="page-tasks">
+          <div class="section-header">
+            <h2><i class="fa-solid fa-list-check" style="color:var(--accent)"></i> Task Board</h2>
+            <p>Track, assign and manage all deployment tasks across your team.</p>
+          </div>
+          <div class="tasks-toolbar">
+            <div class="search-wrap">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="task-search" placeholder="Search tasks..." oninput="filterTasks()"/>
+            </div>
+            <select class="filter-select" id="status-filter" onchange="filterTasks()">
+              <option value="">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="in-progress">In Progress</option>
+              <option value="done">Done</option>
+              <option value="review">Review</option>
+              <option value="blocked">Blocked</option>
+            </select>
+            <select class="filter-select" id="priority-filter" onchange="filterTasks()">
+              <option value="">All Priority</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+            <button class="btn-secondary" onclick="loadTasks()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+            <button class="btn-primary" onclick="toggleAddPanel()"><i class="fa-solid fa-plus"></i> New Task</button>
+          </div>
+          <div class="add-task-panel" id="add-panel">
+            <div class="add-task-grid">
+              <div class="input-group">
+                <label><i class="fa-solid fa-pen"></i> Task Name</label>
+                <input class="inp" type="text" id="new-task" placeholder="e.g. Deploy backend to EC2..."/>
+              </div>
+              <div class="input-group">
+                <label><i class="fa-solid fa-circle-half-stroke"></i> Status</label>
+                <select class="sel" id="new-status">
+                  <option value="pending">⏳ Pending</option>
+                  <option value="in-progress">🔄 In Progress</option>
+                  <option value="review">🔍 Review</option>
+                  <option value="done">✅ Done</option>
+                  <option value="blocked">🚫 Blocked</option>
+                </select>
+              </div>
+              <div class="input-group">
+                <label><i class="fa-solid fa-flag"></i> Priority</label>
+                <select class="sel" id="new-priority">
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="low">Low</option>
+                </select>
+              </div>
+              <button class="btn-primary" onclick="addTask()" style="align-self:flex-end">
+                <i class="fa-solid fa-plus"></i> Add
+              </button>
+            </div>
+          </div>
+          <div class="card" style="padding:0;overflow:hidden;">
+            <table class="task-table">
+              <thead>
+                <tr>
+                  <th><i class="fa-solid fa-hashtag"></i> Task</th>
+                  <th><i class="fa-solid fa-circle-half-stroke"></i> Status</th>
+                  <th><i class="fa-solid fa-flag"></i> Priority</th>
+                  <th><i class="fa-solid fa-user"></i> Assignee</th>
+                  <th><i class="fa-solid fa-clock"></i> Created</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="task-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── PIPELINE PAGE ── -->
+        <div class="page" id="page-pipeline">
+          <div class="section-header">
+            <h2><i class="fa-solid fa-code-branch" style="color:var(--accent)"></i> CI/CD Pipeline</h2>
+            <p>Automated build, test, containerize and deploy workflow via Jenkins + GitHub Actions.</p>
+          </div>
+          <div class="pipeline-stages">
+            <div class="stage success">
+              <div class="stage-status"><span class="badge done"><i class="fa-solid fa-check"></i> Passed</span></div>
+              <div class="stage-icon kpi-icon indigo"><i class="fa-solid fa-code-branch"></i></div>
+              <div class="stage-name">Clone</div>
+              <div class="stage-desc">Pull from GitHub</div>
+            </div>
+            <div class="stage success">
+              <div class="stage-status"><span class="badge done"><i class="fa-solid fa-check"></i> Passed</span></div>
+              <div class="stage-icon kpi-icon cyan"><i class="fa-solid fa-vial"></i></div>
+              <div class="stage-name">Test</div>
+              <div class="stage-desc">pytest · 12 passed</div>
+            </div>
+            <div class="stage success">
+              <div class="stage-status"><span class="badge done"><i class="fa-solid fa-check"></i> Passed</span></div>
+              <div class="stage-icon kpi-icon amber"><i class="fa-brands fa-docker"></i></div>
+              <div class="stage-name">Docker Build</div>
+              <div class="stage-desc">3 images built</div>
+            </div>
+            <div class="stage success">
+              <div class="stage-status"><span class="badge done"><i class="fa-solid fa-check"></i> Passed</span></div>
+              <div class="stage-icon kpi-icon purple"><i class="fa-solid fa-upload"></i></div>
+              <div class="stage-name">Push</div>
+              <div class="stage-desc">DockerHub pushed</div>
+            </div>
+            <div class="stage running">
+              <div class="stage-status"><span class="badge in-progress"><i class="fa-solid fa-spinner fa-spin"></i> Running</span></div>
+              <div class="stage-icon kpi-icon green"><i class="fa-solid fa-rocket"></i></div>
+              <div class="stage-name">Deploy</div>
+              <div class="stage-desc">docker-compose up</div>
+            </div>
+            <div class="stage pending-s">
+              <div class="stage-status"><span class="badge pending"><i class="fa-solid fa-clock"></i> Pending</span></div>
+              <div class="stage-icon kpi-icon red"><i class="fa-solid fa-heart-pulse"></i></div>
+              <div class="stage-name">Health Check</div>
+              <div class="stage-desc">curl /health</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> Build History</div>
+              <span class="badge done"><i class="fa-solid fa-check"></i> 96% success rate</span>
+            </div>
+            <div class="build-list">
+              <div class="build-item">
+                <div class="build-num">#024</div>
+                <div class="build-info">
+                  <div class="build-title">feat: add task priority system and team page</div>
+                  <div class="build-meta">
+                    <span><i class="fa-solid fa-code-branch"></i> main</span>
+                    <span><i class="fa-solid fa-user"></i> admin</span>
+                    <span><i class="fa-solid fa-clock"></i> 2 mins ago</span>
+                  </div>
+                </div>
+                <div class="build-duration">4m 18s</div>
+                <span class="badge in-progress"><i class="fa-solid fa-spinner fa-spin"></i> Running</span>
+              </div>
+              <div class="build-item">
+                <div class="build-num">#023</div>
+                <div class="build-info">
+                  <div class="build-title">fix: resolve MongoDB connection timeout on cold start</div>
+                  <div class="build-meta">
+                    <span><i class="fa-solid fa-code-branch"></i> feature/db-fix</span>
+                    <span><i class="fa-solid fa-user"></i> devuser</span>
+                    <span><i class="fa-solid fa-clock"></i> 1 hr ago</span>
+                  </div>
+                </div>
+                <div class="build-duration">3m 52s</div>
+                <span class="badge done"><i class="fa-solid fa-check"></i> Passed</span>
+              </div>
+              <div class="build-item">
+                <div class="build-num">#022</div>
+                <div class="build-info">
+                  <div class="build-title">chore: update Docker base images to latest</div>
+                  <div class="build-meta">
+                    <span><i class="fa-solid fa-code-branch"></i> main</span>
+                    <span><i class="fa-solid fa-user"></i> admin</span>
+                    <span><i class="fa-solid fa-clock"></i> 3 hrs ago</span>
+                  </div>
+                </div>
+                <div class="build-duration">2m 44s</div>
+                <span class="badge done"><i class="fa-solid fa-check"></i> Passed</span>
+              </div>
+              <div class="build-item">
+                <div class="build-num">#021</div>
+                <div class="build-info">
+                  <div class="build-title">feat: add health check endpoint and logging</div>
+                  <div class="build-meta">
+                    <span><i class="fa-solid fa-code-branch"></i> feature/health</span>
+                    <span><i class="fa-solid fa-user"></i> devuser</span>
+                    <span><i class="fa-solid fa-clock"></i> 5 hrs ago</span>
+                  </div>
+                </div>
+                <div class="build-duration">5m 01s</div>
+                <span class="badge blocked"><i class="fa-solid fa-xmark"></i> Failed</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── INFRA PAGE ── -->
+        <div class="page" id="page-infra">
+          <div class="section-header">
+            <h2><i class="fa-solid fa-server" style="color:var(--accent)"></i> Infrastructure</h2>
+            <p>Terraform-managed AWS resources and Docker container status.</p>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
+            <div class="kpi">
+              <div class="kpi-top"><div class="kpi-icon green"><i class="fa-solid fa-circle-check"></i></div></div>
+              <div class="kpi-val" style="font-size:22px;">3/3</div>
+              <div class="kpi-label">Instances Running</div>
+              <div class="kpi-bar green"></div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-top"><div class="kpi-icon cyan"><i class="fa-brands fa-docker"></i></div></div>
+              <div class="kpi-val" style="font-size:22px;">5</div>
+              <div class="kpi-label">Containers Active</div>
+              <div class="kpi-bar cyan"></div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-top"><div class="kpi-icon amber"><i class="fa-solid fa-cloud"></i></div></div>
+              <div class="kpi-val" style="font-size:22px;">AWS</div>
+              <div class="kpi-label">Cloud Provider</div>
+              <div class="kpi-bar amber"></div>
+            </div>
+          </div>
+          <div class="infra-grid">
+            <div class="infra-card">
+              <div class="infra-header">
+                <div class="infra-icon kpi-icon cyan"><i class="fa-solid fa-display"></i></div>
+                <div><div class="infra-name">Frontend (Nginx)</div><div class="infra-type">Docker Container · Port 80</div></div>
+              </div>
+              <div class="infra-metrics">
+                <div class="metric-row"><div class="metric-label"><span>CPU</span><span>12%</span></div><div class="metric-bar"><div class="metric-fill green" style="width:12%"></div></div></div>
+                <div class="metric-row"><div class="metric-label"><span>Memory</span><span>45%</span></div><div class="metric-bar"><div class="metric-fill cyan" style="width:45%"></div></div></div>
+                <div class="metric-row"><div class="metric-label"><span>Uptime</span><span>99.9%</span></div><div class="metric-bar"><div class="metric-fill green" style="width:99%"></div></div></div>
+              </div>
+              <div class="infra-status"><span class="status-pill running"><span class="status-dot"></span> Running</span><span style="font-family:var(--mono);font-size:10px;color:var(--text3)">nginx:alpine</span></div>
+            </div>
+            <div class="infra-card">
+              <div class="infra-header">
+                <div class="infra-icon kpi-icon indigo"><i class="fa-solid fa-flask"></i></div>
+                <div><div class="infra-name">Backend (Flask)</div><div class="infra-type">Docker Container · Port 5000</div></div>
+              </div>
+              <div class="infra-metrics">
+                <div class="metric-row"><div class="metric-label"><span>CPU</span><span>28%</span></div><div class="metric-bar"><div class="metric-fill amber" style="width:28%"></div></div></div>
+                <div class="metric-row"><div class="metric-label"><span>Memory</span><span>62%</span></div><div class="metric-bar"><div class="metric-fill amber" style="width:62%"></div></div></div>
+                <div class="metric-row"><div class="metric-label"><span>Requests/s</span><span>142</span></div><div class="metric-bar"><div class="metric-fill cyan" style="width:70%"></div></div></div>
+              </div>
+              <div class="infra-status"><span class="status-pill running"><span class="status-dot"></span> Running</span><span style="font-family:var(--mono);font-size:10px;color:var(--text3)">python:3.11-slim</span></div>
+            </div>
+            <div class="infra-card">
+              <div class="infra-header">
+                <div class="infra-icon kpi-icon green"><i class="fa-solid fa-database"></i></div>
+                <div><div class="infra-name">MongoDB</div><div class="infra-type">Docker Container · Port 27017</div></div>
+              </div>
+              <div class="infra-metrics">
+                <div class="metric-row"><div class="metric-label"><span>CPU</span><span>5%</span></div><div class="metric-bar"><div class="metric-fill green" style="width:5%"></div></div></div>
+                <div class="metric-row"><div class="metric-label"><span>Memory</span><span>38%</span></div><div class="metric-bar"><div class="metric-fill green" style="width:38%"></div></div></div>
+                <div class="metric-row"><div class="metric-label"><span>Storage</span><span>1.2 GB</span></div><div class="metric-bar"><div class="metric-fill cyan" style="width:12%"></div></div></div>
+              </div>
+              <div class="infra-status"><span class="status-pill running"><span class="status-dot"></span> Running</span><span style="font-family:var(--mono);font-size:10px;color:var(--text3)">mongo:6</span></div>
+            </div>
+            <div class="infra-card">
+              <div class="infra-header">
+                <div class="infra-icon kpi-icon amber"><i class="fa-brands fa-aws"></i></div>
+                <div><div class="infra-name">EC2 Instance</div><div class="infra-type">t2.micro · us-east-1 · Terraform</div></div>
+              </div>
+              <div class="infra-metrics">
+                <div class="metric-row"><div class="metric-label"><span>CPU</span><span>34%</span></div><div class="metric-bar"><div class="metric-fill amber" style="width:34%"></div></div></div>
+                <div class="metric-row"><div class="metric-label"><span>Disk</span><span>22%</span></div><div class="metric-bar"><div class="metric-fill green" style="width:22%"></div></div></div>
+                <div class="metric-row"><div class="metric-label"><span>Network</span><span>1.4 MB/s</span></div><div class="metric-bar"><div class="metric-fill cyan" style="width:45%"></div></div></div>
+              </div>
+              <div class="infra-status"><span class="status-pill running"><span class="status-dot"></span> Running</span><span style="font-family:var(--mono);font-size:10px;color:var(--text3)">Ubuntu 22.04</span></div>
+            </div>
+            <div class="infra-card">
+              <div class="infra-header">
+                <div class="infra-icon kpi-icon purple"><i class="fa-solid fa-dharmachakra"></i></div>
+                <div><div class="infra-name">Kubernetes (Minikube)</div><div class="infra-type">3 pods · 2 services</div></div>
+              </div>
+              <div class="infra-metrics">
+                <div class="metric-row"><div class="metric-label"><span>Pods Running</span><span>3/3</span></div><div class="metric-bar"><div class="metric-fill green" style="width:100%"></div></div></div>
+                <div class="metric-row"><div class="metric-label"><span>CPU Req.</span><span>250m</span></div><div class="metric-bar"><div class="metric-fill purple" style="width:25%;background:var(--purple)"></div></div></div>
+                <div class="metric-row"><div class="metric-label"><span>Memory Req.</span><span>512Mi</span></div><div class="metric-bar"><div class="metric-fill cyan" style="width:50%"></div></div></div>
+              </div>
+              <div class="infra-status"><span class="status-pill running"><span class="status-dot"></span> Healthy</span><span style="font-family:var(--mono);font-size:10px;color:var(--text3)">k8s v1.28</span></div>
+            </div>
+            <div class="infra-card">
+              <div class="infra-header">
+                <div class="infra-icon kpi-icon red"><i class="fa-solid fa-shield-halved"></i></div>
+                <div><div class="infra-name">Security Group</div><div class="infra-type">AWS · Terraform managed</div></div>
+              </div>
+              <div class="infra-metrics">
+                <div class="metric-row"><div class="metric-label"><span>Open Ports</span><span>22, 80, 5000, 8080</span></div><div class="metric-bar"><div class="metric-fill green" style="width:60%"></div></div></div>
+                <div class="metric-row"><div class="metric-label"><span>Blocked Attacks</span><span>0</span></div><div class="metric-bar"><div class="metric-fill green" style="width:100%"></div></div></div>
+              </div>
+              <div class="infra-status"><span class="status-pill running"><span class="status-dot"></span> Secure</span><span style="font-family:var(--mono);font-size:10px;color:var(--text3)">taskops-sg</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── TEAM PAGE ── -->
+        <div class="page" id="page-team">
+          <div class="section-header">
+            <h2><i class="fa-solid fa-users" style="color:var(--accent)"></i> Team</h2>
+            <p>DevOps engineers and their contributions to this project.</p>
+          </div>
+          <div class="team-grid">
+            <div class="team-card">
+              <div class="team-avatar" style="background:linear-gradient(135deg,var(--accent),var(--purple))">AD</div>
+              <div class="team-name">Admin Dev</div>
+              <div class="team-role"><i class="fa-solid fa-crown" style="color:var(--amber)"></i> Lead DevOps Engineer</div>
+              <div class="team-tags"><span class="tag">Terraform</span><span class="tag">Kubernetes</span><span class="tag">CI/CD</span></div>
+              <div class="team-stats">
+                <div class="team-stat"><div class="team-stat-val">24</div><div class="team-stat-label">Deployments</div></div>
+                <div class="team-stat"><div class="team-stat-val">8</div><div class="team-stat-label">PRs merged</div></div>
+                <div class="team-stat"><div class="team-stat-val">100%</div><div class="team-stat-label">Uptime</div></div>
+              </div>
+            </div>
+            <div class="team-card">
+              <div class="team-avatar" style="background:linear-gradient(135deg,var(--cyan),var(--green))">DU</div>
+              <div class="team-name">Dev User</div>
+              <div class="team-role"><i class="fa-solid fa-code" style="color:var(--cyan)"></i> Backend Developer</div>
+              <div class="team-tags"><span class="tag">Flask</span><span class="tag">MongoDB</span><span class="tag">Docker</span></div>
+              <div class="team-stats">
+                <div class="team-stat"><div class="team-stat-val">12</div><div class="team-stat-label">Commits</div></div>
+                <div class="team-stat"><div class="team-stat-val">5</div><div class="team-stat-label">PRs merged</div></div>
+                <div class="team-stat"><div class="team-stat-val">98%</div><div class="team-stat-label">Tests pass</div></div>
+              </div>
+            </div>
+            <div class="team-card">
+              <div class="team-avatar" style="background:linear-gradient(135deg,var(--pink),var(--amber))">FE</div>
+              <div class="team-name">Frontend Eng</div>
+              <div class="team-role"><i class="fa-solid fa-palette" style="color:var(--pink)"></i> UI/UX Developer</div>
+              <div class="team-tags"><span class="tag">HTML</span><span class="tag">CSS</span><span class="tag">Nginx</span></div>
+              <div class="team-stats">
+                <div class="team-stat"><div class="team-stat-val">9</div><div class="team-stat-label">Commits</div></div>
+                <div class="team-stat"><div class="team-stat-val">3</div><div class="team-stat-label">PRs merged</div></div>
+                <div class="team-stat"><div class="team-stat-val">A+</div><div class="team-stat-label">UI score</div></div>
+              </div>
+            </div>
+            <div class="team-card">
+              <div class="team-avatar" style="background:linear-gradient(135deg,var(--green),var(--cyan))">IA</div>
+              <div class="team-name">Infra Architect</div>
+              <div class="team-role"><i class="fa-solid fa-server" style="color:var(--green)"></i> Cloud Engineer</div>
+              <div class="team-tags"><span class="tag">AWS</span><span class="tag">Ansible</span><span class="tag">IaC</span></div>
+              <div class="team-stats">
+                <div class="team-stat"><div class="team-stat-val">6</div><div class="team-stat-label">TF modules</div></div>
+                <div class="team-stat"><div class="team-stat-val">3</div><div class="team-stat-label">Playbooks</div></div>
+                <div class="team-stat"><div class="team-stat-val">Zero</div><div class="team-stat-label">Downtime</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── LOGS PAGE ── -->
+        <div class="page" id="page-logs">
+          <div class="section-header">
+            <h2><i class="fa-solid fa-terminal" style="color:var(--accent)"></i> System Logs</h2>
+            <p>Real-time application and deployment logs from all services.</p>
+          </div>
+          <div class="log-toolbar">
+            <button class="btn-primary" onclick="addLog()"><i class="fa-solid fa-rotate"></i> Refresh Logs</button>
+            <button class="btn-secondary" onclick="clearLogs()"><i class="fa-solid fa-trash"></i> Clear</button>
+            <select class="filter-select" id="log-filter" onchange="filterLogs()">
+              <option value="">All Levels</option>
+              <option value="INFO">INFO</option>
+              <option value="SUCCESS">SUCCESS</option>
+              <option value="WARN">WARN</option>
+              <option value="ERROR">ERROR</option>
+            </select>
+            <div style="margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--text3);display:flex;align-items:center;gap:6px;">
+              <i class="fa-solid fa-circle" style="color:var(--green);font-size:8px;"></i> Live stream active
+            </div>
+          </div>
+          <div class="log-terminal" id="log-terminal"></div>
+        </div>
+
+      </div><!-- /content -->
+    </main>
+  </div><!-- /layout -->
+</div><!-- /app-page -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = (location.hostname==='localhost'||location.hostname==='127.0.0.1')
+  ? 'http://localhost:5000' : `http://${location.hostname}:5000`;
+
+const USERS = { admin:'admin123', devuser:'dev456', deploy:'deploy789' };
+const COLORS = ['#6366f1','#22d3ee','#22c55e','#f59e0b','#a855f7','#ec4899','#f43f5e'];
+const ASSIGNEES = ['AD','DU','FE','IA'];
+let allTasks = [];
+
+// ── LOGIN ──
+function doLogin(){
+  const u=document.getElementById('login-user').value.trim();
+  const p=document.getElementById('login-pass').value.trim();
+  const err=document.getElementById('login-err');
+  if(!u){err.innerHTML='<i class="fa-solid fa-circle-exclamation"></i> Username is required';return;}
+  if(!p){err.innerHTML='<i class="fa-solid fa-circle-exclamation"></i> Password is required';return;}
+  if(!USERS[u]||USERS[u]!==p){err.innerHTML='<i class="fa-solid fa-circle-exclamation"></i> Invalid credentials';return;}
+  err.innerHTML='';
+  sessionStorage.setItem('dh-user',u);
+  document.getElementById('login-page').style.display='none';
+  document.getElementById('app-page').style.display='block';
+  const initials=u.substring(0,2).toUpperCase();
+  document.getElementById('sidebar-avatar').textContent=initials;
+  document.getElementById('sidebar-avatar').style.background=`linear-gradient(135deg,${COLORS[u.length%COLORS.length]},${COLORS[(u.length+2)%COLORS.length]})`;
+  document.getElementById('sidebar-uname').textContent=u;
+  checkHealth(); loadTasks(); initLogs();
+}
+function doLogout(){
+  sessionStorage.removeItem('dh-user');
+  document.getElementById('login-page').style.display='flex';
+  document.getElementById('app-page').style.display='none';
+}
+['login-user','login-pass'].forEach(id=>document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();}));
+window.addEventListener('load',()=>{
+  const s=sessionStorage.getItem('dh-user');
+  if(s){document.getElementById('login-user').value=s;document.getElementById('login-pass').value=USERS[s]||'';doLogin();}
+});
+
+// ── NAVIGATION ──
+function goPage(name,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  el.classList.add('active');
+  const labels={dashboard:'Dashboard',tasks:'Task Board',pipeline:'CI/CD Pipeline',infra:'Infrastructure',team:'Team',logs:'Logs'};
+  document.getElementById('breadcrumb').innerHTML=`<i class="fa-solid fa-house"></i> Home <i class="fa-solid fa-chevron-right"></i> <span>${labels[name]}</span>`;
+}
+
+// ── HEALTH ──
+async function checkHealth(){
+  const pill=document.getElementById('health-pill'), txt=document.getElementById('health-txt');
+  try{
+    await fetch(`${API}/health`);
+    pill.className='health-pill'; txt.textContent='API Online';
+  }catch{
+    pill.className='health-pill offline'; txt.textContent='API Offline';
+  }
+}
+
+// ── TASKS ──
+async function loadTasks(){
+  try{
+    const r=await fetch(`${API}/data`);
+    allTasks=await r.json();
+    renderTasks(allTasks);
+    updateKPIs(allTasks);
+  }catch{showToast('<i class="fa-solid fa-triangle-exclamation"></i> Cannot reach backend','error');}
+}
+function renderTasks(tasks){
+  const tbody=document.getElementById('task-tbody');
+  document.getElementById('task-nav-count').textContent=tasks.length;
+  if(!tasks.length){
+    tbody.innerHTML=`<tr><td colspan="6"><div class="empty"><i class="fa-solid fa-inbox"></i><p>No tasks found. Add one above.</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML=tasks.map((t,i)=>{
+    const sc=t.status==='done'?'done':t.status==='in-progress'?'in-progress':t.status==='review'?'review':t.status==='blocked'?'blocked':'pending';
+    const pr=t.priority||'medium';
+    const assignee=ASSIGNEES[i%ASSIGNEES.length];
+    const color=COLORS[i%COLORS.length];
+    const time=t.created_at?t.created_at.split('.')[0]:'—';
+    return `<tr class="task-row">
+      <td><span style="font-weight:500">${esc(t.task)}</span></td>
+      <td><span class="badge ${sc}"><i class="fa-solid ${sc==='done'?'fa-check':sc==='in-progress'?'fa-spinner fa-spin':sc==='review'?'fa-magnifying-glass':sc==='blocked'?'fa-ban':'fa-clock'}"></i> ${t.status||'pending'}</span></td>
+      <td><span class="priority-dot ${pr}">${pr}</span></td>
+      <td><div class="task-assignee"><div class="avatar-xs" style="background:${color}">${assignee}</div>${assignee}</div></td>
+      <td><span style="font-family:var(--mono);font-size:11px;color:var(--text3);display:flex;align-items:center;gap:5px"><i class="fa-regular fa-clock"></i>${time}</span></td>
+      <td><button class="btn-icon danger" onclick="deleteTask('${esc(t.task)}')" title="Delete"><i class="fa-solid fa-trash"></i></button></td>
+    </tr>`;
+  }).join('');
+}
+function updateKPIs(tasks){
+  document.getElementById('kpi-tasks').textContent=tasks.length;
+  document.getElementById('kpi-done').textContent=tasks.filter(t=>t.status==='done').length;
+}
+function filterTasks(){
+  const q=document.getElementById('task-search').value.toLowerCase();
+  const s=document.getElementById('status-filter').value;
+  const pr=document.getElementById('priority-filter').value;
+  const filtered=allTasks.filter(t=>{
+    const matchQ=!q||t.task.toLowerCase().includes(q);
+    const matchS=!s||t.status===s;
+    const matchP=!pr||(t.priority||'medium')===pr;
+    return matchQ&&matchS&&matchP;
+  });
+  renderTasks(filtered);
+}
+async function addTask(){
+  const name=document.getElementById('new-task').value.trim();
+  const status=document.getElementById('new-status').value;
+  const priority=document.getElementById('new-priority').value;
+  if(!name){showToast('<i class="fa-solid fa-triangle-exclamation"></i> Task name required','error');return;}
+  try{
+    await fetch(`${API}/data`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({task:name,status,priority})});
+    document.getElementById('new-task').value='';
+    document.getElementById('add-panel').classList.remove('open');
+    showToast('<i class="fa-solid fa-check"></i> Task added','success');
+    loadTasks();
+  }catch{showToast('<i class="fa-solid fa-triangle-exclamation"></i> Failed to add','error');}
+}
+async function deleteTask(name){
+  try{
+    await fetch(`${API}/data/${encodeURIComponent(name)}`,{method:'DELETE'});
+    showToast('<i class="fa-solid fa-trash"></i> Task deleted','info');
+    loadTasks();
+  }catch{showToast('<i class="fa-solid fa-triangle-exclamation"></i> Delete failed','error');}
+}
+function toggleAddPanel(){
+  document.getElementById('add-panel').classList.toggle('open');
+}
+
+// ── LOGS ──
+const LOG_DATA=[
+  {t:'14:40:01',l:'SUCCESS',m:'Container taskops-frontend started successfully · port 80'},
+  {t:'14:40:03',l:'SUCCESS',m:'Container taskops-backend started successfully · port 5000'},
+  {t:'14:40:04',l:'SUCCESS',m:'Container taskops-mongo started successfully · port 27017'},
+  {t:'14:40:05',l:'INFO',m:'MongoDB connection established · taskdb'},
+  {t:'14:40:06',l:'INFO',m:'Flask app running on 0.0.0.0:5000'},
+  {t:'14:40:10',l:'INFO',m:'GET /health → 200 OK · 3ms'},
+  {t:'14:40:12',l:'INFO',m:'GET /data → 200 OK · 12ms · 3 documents'},
+  {t:'14:40:18',l:'INFO',m:'POST /data → 201 Created · task: "Deploy to EC2"'},
+  {t:'14:41:00',l:'WARN',m:'MongoDB memory usage above 60% threshold'},
+  {t:'14:41:30',l:'INFO',m:'Jenkins pipeline #024 started · branch: main'},
+  {t:'14:41:32',l:'INFO',m:'Stage [Clone] → cloning from github.com/user/deployhub'},
+  {t:'14:41:45',l:'SUCCESS',m:'Stage [Test] → pytest passed · 12/12 tests OK'},
+  {t:'14:42:00',l:'SUCCESS',m:'Stage [Docker Build] → 3 images built successfully'},
+  {t:'14:42:20',l:'INFO',m:'Stage [Push] → pushing to dockerhub.io/user/deployhub-backend'},
+  {t:'14:42:45',l:'SUCCESS',m:'Stage [Push] → images pushed successfully'},
+  {t:'14:43:00',l:'INFO',m:'Stage [Deploy] → running docker-compose up -d'},
+  {t:'14:43:10',l:'INFO',m:'Terraform state refreshed · 4 resources tracked'},
+  {t:'14:43:15',l:'INFO',m:'Ansible playbook started · host: 54.210.x.x'},
+];
+let displayedLogs=[];
+function initLogs(){displayedLogs=[...LOG_DATA];renderLogs();}
+function renderLogs(){
+  const f=document.getElementById('log-filter').value;
+  const filtered=f?displayedLogs.filter(l=>l.l===f):displayedLogs;
+  const term=document.getElementById('log-terminal');
+  term.innerHTML=filtered.map(l=>`<div class="log-line">
+    <span class="log-time">${l.t}</span>
+    <span class="log-level ${l.l}">${l.l}</span>
+    <span class="log-msg ${l.l==='ERROR'?'error':l.l==='SUCCESS'?'success':''}">${l.m}</span>
+  </div>`).join('');
+  term.scrollTop=term.scrollHeight;
+}
+function addLog(){
+  const now=new Date();
+  const t=now.toTimeString().slice(0,8);
+  const entries=[
+    {t,l:'INFO',m:`GET /health → 200 OK · ${Math.floor(Math.random()*10)+1}ms`},
+    {t,l:'INFO',m:`GET /data → 200 OK · ${Math.floor(Math.random()*20)+5}ms`},
+    {t,l:'SUCCESS',m:`Health check passed · all 3 containers alive`},
+  ];
+  displayedLogs=[...displayedLogs,...entries].slice(-50);
+  renderLogs();
+  showToast('<i class="fa-solid fa-rotate"></i> Logs refreshed','info');
+}
+function clearLogs(){displayedLogs=[];renderLogs();}
+function filterLogs(){renderLogs();}
+
+// ── TOAST ──
+function showToast(msg,type='success'){
+  const t=document.getElementById('toast');
+  t.innerHTML=msg; t.className=`toast ${type} show`;
+  setTimeout(()=>t.className='toast',3500);
+}
+
+// ── UTILS ──
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+document.getElementById('new-task').addEventListener('keydown',e=>{if(e.key==='Enter')addTask();});
+</script>
+</body>
+</html>
+HTMLEOF
+echo "Done"

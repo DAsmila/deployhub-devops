@@ -1,0 +1,86 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKERHUB_USER   = 'your-dockerhub-username'   // CHANGE THIS
+        IMAGE_BACKEND    = "${DOCKERHUB_USER}/taskops-backend"
+        IMAGE_FRONTEND   = "${DOCKERHUB_USER}/taskops-frontend"
+        IMAGE_TAG        = "${BUILD_NUMBER}"
+    }
+
+    stages {
+
+        stage('Clone') {
+            steps {
+                echo '==> Cloning repository...'
+                checkout scm
+            }
+        }
+
+        stage('Install & Test') {
+            steps {
+                echo '==> Running backend tests...'
+                dir('backend') {
+                    sh '''
+                        python3 -m pip install -r requirements.txt --quiet
+                        python3 -m pip install pytest --quiet
+                        python3 -m pytest test_app.py -v
+                    '''
+                }
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                echo '==> Building Docker images...'
+                sh "docker build -t ${IMAGE_BACKEND}:${IMAGE_TAG} ./backend"
+                sh "docker build -t ${IMAGE_FRONTEND}:${IMAGE_TAG} ./frontend"
+            }
+        }
+
+        stage('Docker Push') {
+            steps {
+                echo '==> Pushing to DockerHub...'
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                    sh "docker push ${IMAGE_BACKEND}:${IMAGE_TAG}"
+                    sh "docker push ${IMAGE_FRONTEND}:${IMAGE_TAG}"
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo '==> Deploying with Docker Compose...'
+                sh 'docker-compose down --remove-orphans || true'
+                sh 'docker-compose up -d --build'
+                sh 'sleep 5'
+                sh 'docker ps'
+            }
+        }
+
+        stage('Health Check') {
+            steps {
+                echo '==> Verifying deployment...'
+                sh 'curl -f http://localhost:5000/health || exit 1'
+                echo '==> All services healthy!'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '==> Pipeline SUCCESS. App deployed!'
+        }
+        failure {
+            echo '==> Pipeline FAILED. Check logs above.'
+        }
+        always {
+            sh 'docker logout || true'
+        }
+    }
+}

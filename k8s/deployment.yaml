@@ -1,0 +1,133 @@
+---
+# Backend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: taskops-backend
+  labels:
+    app: taskops-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: taskops-backend
+  template:
+    metadata:
+      labels:
+        app: taskops-backend
+    spec:
+      containers:
+        - name: backend
+          image: your-dockerhub-username/taskops-backend:latest
+          ports:
+            - containerPort: 5000
+          env:
+            - name: MONGO_URI
+              value: "mongodb://taskops-mongo:27017/taskdb"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+---
+# Backend Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: taskops-backend
+spec:
+  selector:
+    app: taskops-backend
+  ports:
+    - port: 5000
+      targetPort: 5000
+  type: ClusterIP
+
+---
+# Frontend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: taskops-frontend
+  labels:
+    app: taskops-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: taskops-frontend
+  template:
+    metadata:
+      labels:
+        app: taskops-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: your-dockerhub-username/taskops-frontend:latest
+          ports:
+            - containerPort: 80
+
+---
+# Frontend Service (NodePort for Minikube)
+apiVersion: v1
+kind: Service
+metadata:
+  name: taskops-frontend
+spec:
+  selector:
+    app: taskops-frontend
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30080
+  type: NodePort
+
+---
+# MongoDB Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: taskops-mongo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: taskops-mongo
+  template:
+    metadata:
+      labels:
+        app: taskops-mongo
+    spec:
+      containers:
+        - name: mongo
+          image: mongo:6
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - name: mongo-storage
+              mountPath: /data/db
+      volumes:
+        - name: mongo-storage
+          emptyDir: {}
+
+---
+# MongoDB Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: taskops-mongo
+spec:
+  selector:
+    app: taskops-mongo
+  ports:
+    - port: 27017
+      targetPort: 27017
+  type: ClusterIP
