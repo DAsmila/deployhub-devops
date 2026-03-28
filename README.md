@@ -137,7 +137,7 @@ terraform destroy
 
 ---
 
-## ✅ STEP 5 — Ansible Deploy (Alternative IaC)
+##  STEP 5 — Ansible Deploy (Alternative IaC)
 
 ```bash
 cd ansible
@@ -156,7 +156,7 @@ ansible-playbook -i inventory.ini playbook.yml
 
 ---
 
-##  STEP 6 — Kubernetes with Minikube (CO5 Bonus)
+##  STEP 6 — Kubernetes with Minikube 
 
 ```bash
 # Start Minikube
@@ -178,29 +178,5 @@ kubectl get all
 
 ---
 
-## 🏥 API Endpoints
-
-| Method | URL | Description |
-|--------|-----|-------------|
-| GET | `/health` | Health check |
-| GET | `/data` | Get all tasks |
-| POST | `/data` | Add a task |
-| DELETE | `/data/<name>` | Delete a task |
-
-### Example:
-```bash
-# Health check
-curl http://localhost:5000/health
-
-# Add task
-curl -X POST http://localhost:5000/data \
-  -H "Content-Type: application/json" \
-  -d '{"task": "Deploy to prod", "status": "pending"}'
-
-# Get tasks
-curl http://localhost:5000/data
-```
-
----
 
 
