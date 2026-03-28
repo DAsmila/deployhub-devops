@@ -179,6 +179,10 @@ kubectl get all
 ```
 ## Frontend Feature
 This branch includes UI improvements for DeployHub dashboard.
+
+## Frontend Feature
+Updated UI with dashboard components (PR test change)
+
 # this 
     is
       my 
