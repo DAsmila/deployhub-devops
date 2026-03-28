@@ -107,3 +107,4 @@ resource "aws_instance" "taskops_server" {
     Project = "TaskOps-DevOps"
   }
 }
+# Terraform IaC - AWS EC2 
