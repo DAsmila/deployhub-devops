@@ -175,7 +175,11 @@ minikube service taskops-frontend
 # Show in viva
 kubectl get all
 ```
-
+# this 
+    is
+      my 
+        devops 
+            project
 ---
 
 
