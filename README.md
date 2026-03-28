@@ -1,4 +1,4 @@
-# 🚀 TaskOps — DevOps Project (Full Marks Guide)
+#  TaskOps — DevOps Project 
 
 > 3-tier Microservices app with Git, CI/CD (Jenkins + GitHub Actions), Docker, Kubernetes, Terraform & Ansible
 
@@ -8,36 +8,36 @@
 
 ```
 devops-project/
-├── frontend/               # HTML + Nginx (port 80)
+├── frontend/               
 │   ├── index.html
 │   └── Dockerfile
-├── backend/                # Flask REST API (port 5000)
+├── backend/                
 │   ├── app.py
 │   ├── requirements.txt
 │   ├── test_app.py
 │   └── Dockerfile
 ├── jenkins/
-│   └── Jenkinsfile         # CI/CD pipeline
-├── terraform/              # Infrastructure as Code
+│   └── Jenkinsfile         
+├── terraform/              
 │   ├── main.tf
 │   ├── variables.tf
 │   └── outputs.tf
-├── ansible/                # Configuration management
+├── ansible/                
 │   ├── playbook.yml
 │   └── inventory.ini
-├── k8s/                    # Kubernetes manifests
+├── k8s/                    
 │   └── deployment.yaml
 ├── .github/
 │   └── workflows/
-│       └── ci-cd.yml       # GitHub Actions pipeline
-├── docker-compose.yml      # All services together
-├── prometheus.yml          # Monitoring config
+│       └── ci-cd.yml       
+├── docker-compose.yml      
+├── prometheus.yml          
 └── README.md
 ```
 
 ---
 
-## ✅ STEP 1 — Git Setup (CO2 — 8 Marks)
+## STEP 1 — Git Setup 
 
 ```bash
 # Clone or init
@@ -68,11 +68,10 @@ git merge feature/docker
 git push origin main
 ```
 
-> 💡 **Viva tip**: Show the GitHub repo → Insights → Network to demonstrate branching.
 
 ---
 
-## ✅ STEP 2 — Run Locally (Test First)
+## STEP 2 — Run Locally (Test First)
 
 ```bash
 # Run everything with one command
@@ -88,7 +87,7 @@ docker-compose up --build
 
 ---
 
-## ✅ STEP 3 — Jenkins CI/CD Pipeline (CO3 — 7 Marks)
+##  STEP 3 — Jenkins CI/CD Pipeline 
 
 ### Install Jenkins (on your machine or VM):
 ```bash
@@ -114,7 +113,7 @@ Clone → Test → Docker Build → Docker Push → Deploy → Health Check
 
 ---
 
-## ✅ STEP 4 — Terraform — Infrastructure as Code (CO5 — 7 Marks)
+## STEP 4 — Terraform — Infrastructure as Code 
 
 ```bash
 cd terraform
@@ -135,7 +134,6 @@ terraform output
 terraform destroy
 ```
 
-> 💡 **What to show in viva**: `terraform apply` output with EC2 public IP, then open app in browser using that IP.
 
 ---
 
@@ -158,7 +156,7 @@ ansible-playbook -i inventory.ini playbook.yml
 
 ---
 
-## ✅ STEP 6 — Kubernetes with Minikube (CO5 Bonus)
+##  STEP 6 — Kubernetes with Minikube (CO5 Bonus)
 
 ```bash
 # Start Minikube
@@ -205,21 +203,4 @@ curl http://localhost:5000/data
 
 ---
 
-## 🎯 Rubric Checklist
 
-| Criteria | Marks | What to Show |
-|----------|-------|--------------|
-| Version Control | 8/8 | GitHub repo with feature branches + PRs + commit history |
-| CI/CD Pipeline | 7/7 | Jenkins dashboard with all 6 stages green ✅ |
-| Containerization | 8/8 | `docker ps` showing all 5 containers + Minikube pods |
-| IaC | 7/7 | `terraform apply` output + `ansible-playbook` running |
-
----
-
-## 🔥 Viva Talking Points
-
-1. **"We used Git Flow"** — main, feature/frontend, feature/backend branches with PRs
-2. **"End-to-end automation"** — push to GitHub → Jenkins triggers → tests run → Docker image built → deployed
-3. **"Health check endpoint"** — `/health` used by Docker healthcheck AND Jenkins pipeline
-4. **"Reproducible infra"** — `terraform apply` spins up a fresh server with Docker pre-installed
-5. **"Monitoring included"** — Prometheus scrapes metrics, Grafana visualizes them
