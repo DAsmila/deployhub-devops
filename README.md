@@ -174,7 +174,11 @@ minikube service taskops-frontend
 
 # Show in viva
 kubectl get all
+
+
 ```
+## Frontend Feature
+This branch includes UI improvements for DeployHub dashboard.
 # this 
     is
       my 
