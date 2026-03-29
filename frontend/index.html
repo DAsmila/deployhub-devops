@@ -940,6 +940,11 @@ const USERS = { admin:'admin123', devuser:'dev456', deploy:'deploy789' };
 const COLORS = ['#6366f1','#22d3ee','#22c55e','#f59e0b','#a855f7','#ec4899','#f43f5e'];
 const ASSIGNEES = ['AD','DU','FE','IA'];
 let allTasks = [];
+let apiOnline = false;
+
+// ── LOCAL STORAGE HELPERS ──
+function saveTasks(tasks){ try{localStorage.setItem('dh-tasks',JSON.stringify(tasks));}catch(e){} }
+function getSavedTasks(){ try{return JSON.parse(localStorage.getItem('dh-tasks')||'[]');}catch(e){return[];} }
 
 // ── LOGIN ──
 function doLogin(){
@@ -984,21 +989,27 @@ function goPage(name,el){
 async function checkHealth(){
   const pill=document.getElementById('health-pill'), txt=document.getElementById('health-txt');
   try{
-    await fetch(`${API}/health`);
-    pill.className='health-pill'; txt.textContent='API Online';
+    const r=await fetch(`${API}/health`,{signal:AbortSignal.timeout(3000)});
+    if(r.ok){ pill.className='health-pill'; txt.textContent='API Online'; apiOnline=true; }
+    else throw new Error();
   }catch{
-    pill.className='health-pill offline'; txt.textContent='API Offline';
+    pill.className='health-pill offline'; txt.textContent='API Offline'; apiOnline=false;
   }
 }
 
 // ── TASKS ──
 async function loadTasks(){
   try{
-    const r=await fetch(`${API}/data`);
+    const r=await fetch(`${API}/data`,{signal:AbortSignal.timeout(3000)});
     allTasks=await r.json();
-    renderTasks(allTasks);
-    updateKPIs(allTasks);
-  }catch{showToast('<i class="fa-solid fa-triangle-exclamation"></i> Cannot reach backend','error');}
+    saveTasks(allTasks);
+    apiOnline=true;
+  }catch{
+    allTasks=getSavedTasks();
+    apiOnline=false;
+  }
+  renderTasks(allTasks);
+  updateKPIs(allTasks);
 }
 function renderTasks(tasks){
   const tbody=document.getElementById('task-tbody');
@@ -1044,20 +1055,41 @@ async function addTask(){
   const status=document.getElementById('new-status').value;
   const priority=document.getElementById('new-priority').value;
   if(!name){showToast('<i class="fa-solid fa-triangle-exclamation"></i> Task name required','error');return;}
-  try{
-    await fetch(`${API}/data`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({task:name,status,priority})});
-    document.getElementById('new-task').value='';
-    document.getElementById('add-panel').classList.remove('open');
-    showToast('<i class="fa-solid fa-check"></i> Task added','success');
-    loadTasks();
-  }catch{showToast('<i class="fa-solid fa-triangle-exclamation"></i> Failed to add','error');}
+  const newTask={task:name,status,priority,created_at:new Date().toISOString().replace('T',' ').split('.')[0]};
+  if(apiOnline){
+    try{
+      await fetch(`${API}/data`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({task:name,status,priority})});
+      showToast('<i class="fa-solid fa-check"></i> Task added to database','success');
+    }catch{
+      apiOnline=false;
+      allTasks=[...allTasks,newTask];
+      saveTasks(allTasks);
+      showToast('<i class="fa-solid fa-check"></i> Task saved locally','info');
+      document.getElementById('new-task').value='';
+      document.getElementById('add-panel').classList.remove('open');
+      renderTasks(allTasks); updateKPIs(allTasks); return;
+    }
+  } else {
+    allTasks=[...allTasks,newTask];
+    saveTasks(allTasks);
+    showToast('<i class="fa-solid fa-check"></i> Task saved locally (API offline)','info');
+  }
+  document.getElementById('new-task').value='';
+  document.getElementById('add-panel').classList.remove('open');
+  loadTasks();
 }
 async function deleteTask(name){
-  try{
-    await fetch(`${API}/data/${encodeURIComponent(name)}`,{method:'DELETE'});
-    showToast('<i class="fa-solid fa-trash"></i> Task deleted','info');
-    loadTasks();
-  }catch{showToast('<i class="fa-solid fa-triangle-exclamation"></i> Delete failed','error');}
+  if(apiOnline){
+    try{
+      await fetch(`${API}/data/${encodeURIComponent(name)}`,{method:'DELETE'});
+      showToast('<i class="fa-solid fa-trash"></i> Task deleted','info');
+      loadTasks(); return;
+    }catch{ apiOnline=false; }
+  }
+  allTasks=allTasks.filter(t=>t.task!==name);
+  saveTasks(allTasks);
+  renderTasks(allTasks); updateKPIs(allTasks);
+  showToast('<i class="fa-solid fa-trash"></i> Task removed locally','info');
 }
 function toggleAddPanel(){
   document.getElementById('add-panel').classList.toggle('open');
